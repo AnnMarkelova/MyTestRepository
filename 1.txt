@@ -1,0 +1,142 @@
+#include "stdafx.h"
+#include <fstream>
+#include <iostream>
+#include <cmath>
+using namespace std;
+
+void Print_Martix(int n, int m, double **mass)
+{
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < m; j++)
+		{
+			cout << mass[i][j] << "\t";
+		}
+		cout << "\n";
+	}
+}
+void Yakobi(int n, int m, double **mass)
+{
+	double *ans;
+	ans = new double [n];
+	double *ans1;
+	ans1 = new double[n];
+	for (int i = 0; i < n; i++)
+	{
+		ans[i] = 0;
+		ans1[i] = 0;
+	}
+	for (int i = 0; i < n; i++) 
+	{
+		float stack = 0;
+		for (int j = n-1; j >= 0; j--) 
+		{
+			stack += ans[j] * mass[i][j];
+		}
+		ans1[i] = (mass[i][n] - stack) / mass[i][i];
+		for (int i = 0; i<n; i++) 
+		{
+			cout << "x" << i + 1 << ": " << ans1[i] << endl;
+		}
+		cout << "\n";
+	}
+
+	cout << "Решение: " << endl;
+	for (int i = 0; i<n; i++) {
+		cout << "x" << i + 1 << ": " << ans1[i] << endl;
+	}
+
+}
+void Zeidel()
+{
+
+}
+void diag_preobl(int n, int m, double **mass)
+{
+	double sum = 0;
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			if (i != j)
+			{
+				sum += abs(mass[i][j]);
+			}
+		}
+		if (abs(mass[i][i]) < sum)
+		{
+			cout << "Матрица не имеет диагонального преобладания\n";
+			system("pause");
+			exit(1);
+			break;
+		}
+	}
+}
+
+
+int main()
+{
+	setlocale(LC_ALL, "RUSSIAN");
+
+	ifstream in("input.txt");
+	int count = 0;//число чисел в файле
+	int temp;//Временная переменная
+
+	while (!in.eof())// пробегаем пока не встретим конец файла eof
+	{
+		in >> temp;
+		count++;
+	}
+
+	//Переводим каретку в потоке в начало файла
+	in.seekg(0, ios::beg);
+	in.clear();
+
+	int count_space = 0;//Число пробелов в первой строке
+	char symbol;
+	while (!in.eof())//цикл ограничен концом файла
+	{
+		in.get(symbol);//считывается каждый символ
+		if (symbol == ' ') count_space++;
+		if (symbol == '\n') break;//выход из цикла
+	}
+
+	//Переходим в потоке в начало файла
+	in.seekg(0, ios::beg);
+	in.clear();
+
+	int n = count_space;//число строк
+	int m = count_space + 1;//число столбцов
+	double **mass = new double*[n];
+	for (int i = 0; i < n; i++)
+	{
+		mass[i] = new double[m];
+	}
+	//Считываем матрицу из файла
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < m; j++)
+		{
+			in >> mass[i][j];
+		}
+	}
+	in.close();//закрытие файла
+
+	cout << "Введенная матрица коэффициентов слау:\n";
+	Print_Martix(n, m, mass);
+
+	diag_preobl(n, m, mass);
+
+	int method_num;
+	cout << "Выберите метод: 1 - метод простой итерации; 2 - метод Зейделя\n";
+	cin >> method_num;
+
+	switch (method_num) 
+	{
+	case 1: Yakobi(n,m,mass); break;
+	case 2: Zeidel(); break;
+	}
+
+	system("pause");
+	return 0;
+}
